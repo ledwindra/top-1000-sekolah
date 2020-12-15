@@ -5,7 +5,8 @@ from time import sleep
 
 class TopSchool:
     URL = 'https://top-1000-sekolah.ltmpt.ac.id'
-    COLUMNS = [
+    RERATA = [
+        'data_key',
         'urut_nasional',
         'urut_provinsi',
         'rerata',
@@ -13,6 +14,18 @@ class TopSchool:
         'sekolah',
         'provinsi',
         'kota_kab',
+        'jenis'
+    ]
+    DETAIL = [
+        'data_key',
+        'urut_nasional',
+        'npsn',
+        'sekolah',
+        'provinsi',
+        'rerata',
+        'tertinggi',
+        'terendah',
+        'std_deviasi',
         'jenis'
     ]
 
@@ -39,33 +52,39 @@ class TopSchool:
 
         return page
 
-    def get_table(self, url):
+    def get_table(self, url, content_index):
         status_code = None
         while status_code != 200:
             try:
                 res = requests.get(url)
                 status_code = res.status_code
                 content = BeautifulSoup(res.content, features='html.parser')
-                content = content.find('table', {'class': 'table table-striped table-bordered'})
-                table = content.find('tbody')
+                content = content.find_all('table', {'class': 'table table-striped table-bordered'})
+                table = content[content_index].find('tbody')
                 return table
             except Exception as err:
                 print(err)
                 sleep(5)
                 continue
 
-    def dataframe(self, table):
+    def dataframe(self, table, cols):
         data = table.find_all('tr')
+        data_key = [x.get('data-key') for x in data]
         data = [x.find_all('td') for x in data]
         data = [[j.text for j in data[i]] for i in range(len(data))]
-        df = pd.DataFrame(data, columns=self.COLUMNS)
+        [data[i].insert(0, data_key[i]) for i in range(len(data))]
+        df = pd.DataFrame(data, columns=cols)
 
         return df
 
 if __name__ == "__main__":
     top_school = TopSchool()
     page = top_school.page()
-    table = [top_school.get_table(x) for x in page]
-    df = [top_school.dataframe(x) for x in table]
-    df = pd.concat(df, sort=False)
-    df.to_csv('data/top-1000-sekolah.csv', index=False)
+    def to_csv(content_index, cols, file_name):
+        df = [top_school.get_table(x, content_index) for x in page[:1]]
+        df = [top_school.dataframe(x, cols) for x in df]
+        df = pd.concat(df, sort=False)
+        df.to_csv(f'data/{file_name}.csv', index=False)
+    
+    to_csv(0, top_school.RERATA, 'rerata-nilai-tps')
+    to_csv(1, top_school.DETAIL, 'detail-nilai-tps')
