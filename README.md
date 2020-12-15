@@ -8,6 +8,16 @@ Following are the documentations in respective language:
 - [Bahasa Indonesia]()
 - [English]()
 
+# Permission
+Visit the [robots.txt](https://top-1000-sekolah.ltmpt.ac.id/robots.txt) and following is the value:
+
+```
+User-agent: *
+Disallow:
+```
+
+This means nobody is not allowed to get the data.
+
 # Do it locally
 
 ```bash
