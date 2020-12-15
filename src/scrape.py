@@ -81,7 +81,7 @@ if __name__ == "__main__":
     top_school = TopSchool()
     page = top_school.page()
     def to_csv(content_index, cols, file_name):
-        df = [top_school.get_table(x, content_index) for x in page[:1]]
+        df = [top_school.get_table(x, content_index) for x in page]
         df = [top_school.dataframe(x, cols) for x in df]
         df = pd.concat(df, sort=False)
         df.to_csv(f'data/{file_name}.csv', index=False)
