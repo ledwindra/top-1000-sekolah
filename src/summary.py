@@ -77,14 +77,31 @@ class TopSchool:
 
         return df
 
+    def concatenate(self, content_index, cols):
+        df = [self.get_table(x, content_index) for x in self.page()]
+        df = [self.dataframe(x, cols) for x in df]
+        df = pd.concat(df, sort=False)
+
+        return df
+
+    def convert_to_float(self, df, cols):
+        df[cols] = df[cols].apply(lambda x: x.replace(',', '.')).astype(float)
+
+        return df
+
+    def save_file(self, df, file_name):
+        df.to_csv(f'data/{file_name}.csv', index=False)
+
 if __name__ == "__main__":
     top_school = TopSchool()
-    page = top_school.page()
-    def to_csv(content_index, cols, file_name):
-        df = [top_school.get_table(x, content_index) for x in page]
-        df = [top_school.dataframe(x, cols) for x in df]
-        df = pd.concat(df, sort=False)
-        df.to_csv(f'data/{file_name}.csv', index=False)
-    
-    to_csv(0, top_school.RERATA, 'rerata-nilai-tps')
-    to_csv(1, top_school.DETAIL, 'detail-nilai-tps')
+    # rerata
+    rerata = top_school.concatenate(0, top_school.RERATA)
+    rerata = top_school.convert_to_float(rerata, 'rerata')
+    top_school.save_file(rerata, 'rerata-nilai-tps')
+
+    # detail
+    detail = top_school.concatenate(1, top_school.DETAIL)
+    convert_detail = ['rerata', 'tertinggi', 'terendah', 'std_deviasi']
+    for column in convert_detail:
+        detail = top_school.convert_to_float(detail, column)
+    top_school.save_file(detail, 'detail-nilai-tps')
